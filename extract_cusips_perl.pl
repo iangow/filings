@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 use DBI;
 use HTML::Strip;
 use File::stat;
@@ -19,7 +19,6 @@ my $sth = $dbh->prepare("
   SELECT file_name 
   FROM filings.cusip_cik
   ORDER BY file_name
-  LIMIT 1000
 ");
 $sth->execute();
 

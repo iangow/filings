@@ -1,15 +1,19 @@
 library(RPostgreSQL)
-drv <- dbDriver("PostgreSQL")
-pg <- dbConnect(drv, dbname="crsp")
+pg <- dbConnect(PostgreSQL())
 
 # The name of the local directory where filings are stored.
 raw_directory <- "/Volumes/2TB/data/"
 
 # Pull together a list of all N-PX filings on EDGAR
 file.list <- dbGetQuery(pg, "
-    SELECT * FROM filings.filings AS b
+    SET work_mem='10GB';
+
+    SELECT * 
+    FROM filings.filings
     WHERE form_type IN ('SC 13G', 'SC 13G/A', 'SC 13D', 'SC 13D/A')
-                       -- AND date_filed BETWEEN '2012-01-01' AND '2012-10-01'
+    AND file_name NOT IN (
+        SELECT file_name 
+        FROM filings.cusip_cik)
 ")
 
 get_text_file <- function(path) {

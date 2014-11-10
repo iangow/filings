@@ -1,4 +1,4 @@
-#!/opt/local/bin/perl
+#!/usr/bin/env perl
 use DBI;
 use POSIX qw(strftime);
 
@@ -23,10 +23,10 @@ $sql = "
 $dbh->do($sql);
 
 # Use PostgreSQL's COPY function to get data into the database
-for ($i=1; $i<=5; $i++) {
+for ($i=1; $i<=6; $i++) {
   $time = localtime; 
   $now_string = strftime "%a %b %e %H:%M:%S %Y", localtime;
-  $filename = "cusip_cik_" . $i . ".csv.gz";
+  $filename = "/Users/igow/Dropbox/data/filings/cusip_cik_" . $i . ".csv.gz";
   printf "Beginning import of $filename at $now_string\n";  
 
   $cmd  = "gunzip -c \"$filename\""; # | sed 's/\\\"//g'  ";
@@ -39,14 +39,11 @@ for ($i=1; $i<=5; $i++) {
   printf "Completed import of $filename at $now_string\n"; 
 }
 # Fix permissions and set up indexes
-#$sql = "ALTER TABLE issvoting.npx OWNER TO activism";
-# $dbh->do($sql);
+
 
 $sql = "
     SET maintenance_work_mem='10GB';
     CREATE INDEX ON filings.cusip_cik (cusip);";
-    #   -- CREATE INDEX ON bgt.speakers (file_name);";
-    #  UPDATE bgt.speakers SET employer=trim(employer);";
 $dbh->do($sql);
 
 $dbh->disconnect();
