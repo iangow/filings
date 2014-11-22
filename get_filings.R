@@ -50,7 +50,7 @@
     # dbGetQuery(pg, "DROP TABLE IF EXISTS filings.filings")
 
     for (year in 2014) {
-      for (quarter in 1:4) {
+      for (quarter in 4) {
         dbGetQuery(pg, paste(
           "DELETE
           FROM filings.filings

@@ -23,7 +23,7 @@ $sql = "
 $dbh->do($sql);
 
 # Use PostgreSQL's COPY function to get data into the database
-for ($i=1; $i<=6; $i++) {
+for ($i=1; $i<=8; $i++) {
   $time = localtime; 
   $now_string = strftime "%a %b %e %H:%M:%S %Y", localtime;
   $filename = "/Users/igow/Dropbox/data/filings/cusip_cik_" . $i . ".csv.gz";

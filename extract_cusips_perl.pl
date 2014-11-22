@@ -4,9 +4,10 @@ use HTML::Strip;
 use File::stat;
 
 $path_to_edgar = "/Volumes/2TB/data/";
-
+$dbname = "crsp";
 # connect
-my $dbh = DBI->connect("DBI:Pg:dbname=crsp;host=localhost", "igow", "test", {'RaiseError' => 1});
+my $dbh = DBI->connect("dbi:Pg:dbname=$dbname", 'igow')	
+	or die "Cannot connect: " . $DBI::errstr;
 #  
 # Get the list of filings
 my $sth = $dbh->prepare("
@@ -20,6 +21,7 @@ my $sth = $dbh->prepare("
   FROM filings.cusip_cik
   ORDER BY file_name
 ");
+
 $sth->execute();
 
 # Output header row
