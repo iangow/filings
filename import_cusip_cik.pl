@@ -43,7 +43,8 @@ for ($i=1; $i<=8; $i++) {
 
 $sql = "
     SET maintenance_work_mem='10GB';
-    CREATE INDEX ON filings.cusip_cik (cusip);";
+    CREATE INDEX ON filings.cusip_cik (cusip);
+    CREATE INDEX ON filings.cusip_cik (substr(cusip, 1, 8));";
 $dbh->do($sql);
 
 $dbh->disconnect();
