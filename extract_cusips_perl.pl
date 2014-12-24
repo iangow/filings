@@ -5,6 +5,7 @@ use File::stat;
 
 $path_to_edgar = "/Volumes/2TB/data/";
 $dbname = "crsp";
+
 # connect
 my $dbh = DBI->connect("dbi:Pg:dbname=$dbname", 'igow')	
 	or die "Cannot connect: " . $DBI::errstr;
