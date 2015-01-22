@@ -13,12 +13,14 @@ file.list <- dbGetQuery(pg, "
     AND file_name NOT IN (
         SELECT file_name 
         FROM filings.cusip_cik)
+    LIMIT 10
 ")
 
 dbDisconnect(pg)
 
+library(devtools)
 # Load functions to download filings ----
-source("https://github.com/iangow/acct_data/blob/master/filings/download_filing_functions.R")
+source_url("https://raw.githubusercontent.com/iangow/acct_data/master/filings/download_filing_functions.R")
 
 # Now, pull text files for each filing ----
 file.list$have_file <- NA
