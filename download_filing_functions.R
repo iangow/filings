@@ -172,5 +172,6 @@ extract.filings <- function(file_path) {
 }
 
 html2txt <- function(file) {
+    library(XML)
     xpathApply(htmlParse(file, encoding="UTF-8"), "//body", xmlValue)[[1]] 
 }
