@@ -79,3 +79,98 @@ get_sgml_file <- function(path) {
     return(NA)
   } 
 }
+
+extract.filings <- function(file_path) {
+## A function to extract filings from complete submission text files submitted
+## to the SEC into the component files contained within them.
+    require(XML)
+    
+    new_location <- Sys.getenv("EDGAR_DIR")
+     
+    # Parse the file as an XML file containing multiple documents
+    webpage <- readLines(file_path)
+     
+    # Extract a list of file names from the complete text submission
+    file.name <- gsub("<FILENAME>","", 
+                      grep("<FILENAME>.*$", webpage,  perl=TRUE, value=TRUE))
+    print(file.name)
+    
+    # If there are no file names, then the full text submission is simply a text file.
+    # Rather than copying this to the new location, I just symlink it (this saves space).
+    if (length(file.name)==0) { 
+        return(file.name)
+    } 
+     
+    # If got here, we have a full-text submission that isn't simply a text file
+    # We need to make the parent directory for the component files that are 
+    # embedded in the submission
+    file.dir <- gsub("-(\\d{2})-(\\d{6})\\.txt$", "\\1\\2", file_path, perl=TRUE)
+    print(file.dir)
+    dir.create(file.dir, showWarnings=FALSE, recursive=TRUE)
+     
+    # Get a list of file names, and their start and end locations within the
+    # text file. (I use unique file names, as sometimes--albeit rarely--the
+    # filename is repeated).
+    file.name <- unique(file.path(file.dir, file.name))
+    start.line <- grep("<DOCUMENT>.*$", webpage,  perl=TRUE) 
+    end.line <- grep("</DOCUMENT>.*$", webpage,  perl=TRUE)     
+    print(file.name)
+     
+    for (i in 1:length(file.name)) {
+        # Skip the file if it already exists and the extracted file was extracted 
+        # recently.
+        if(file.exists(file.name[i]) && 
+            as.Date(file.info(file.name[i])$ctime) > "2012-02-15") {
+            next
+        }
+         
+        # Get the extension of the file to be extracted
+        file.ext <- gsub(".*\\.(.*?)$", "\\1", file.name[i])
+         
+        # Extract binary files
+        if (file.ext %in% c("zip", "xls", "jpg", "gif")) {
+            temp <- webpage[start.line[i]:end.line[i]]
+            pdf.start <- grep("^begin", temp,  perl=TRUE)
+            pdf.end <- grep("^end", temp,  perl=TRUE)  
+            t <- tempfile()
+            writeLines(temp[pdf.start:pdf.end], con=t)
+            print(paste("uudecode -o", file.name[i], t))
+            system(paste("uudecode -o", file.name[i], t))
+            unlink(t)
+        }
+         
+        # Extract simple text files
+        if (file.ext=="txt") {
+            temp <- webpage[start.line[i]:end.line[i]]
+            writeLines(temp, con=file.name[i])
+        }
+         
+        # Extract text-based formatted file types
+        if (file.ext %in% c("htm", "js", "css", "paper", "xsd")) {
+            temp <- webpage[start.line[i]:end.line[i]]
+            pdf.start <- grep("^<TEXT>", temp,  perl=TRUE) +1
+            pdf.end <- grep("^</TEXT>", temp,  perl=TRUE) -1  
+            t <- tempfile()
+            writeLines(temp[pdf.start:pdf.end], con=file.name[i])
+            unlink(t)
+        }
+         
+        # Extract PDFs
+        if (file.ext=="pdf") {
+            temp <- webpage[start.line[i]:end.line[i]]
+            pdf.start <- grep("^<PDF>", temp,  perl=TRUE) +1
+            pdf.end <- grep("^</PDF>", temp,  perl=TRUE) -1  
+            t <- tempfile()
+            writeLines(temp[pdf.start:pdf.end], con=t)
+            print(paste("uudecode -o", file.name[i], t))
+            system(paste("uudecode -o", file.name[i], t))
+            unlink(t)
+        }
+ 
+    }
+    return(file.name)
+}
+
+html2txt <- function(file) {
+    xpathApply(htmlParse(file, encoding="UTF-8"), "//body", xmlValue)[[1]] 
+}
