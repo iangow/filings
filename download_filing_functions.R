@@ -25,6 +25,30 @@ get_text_file <- function(path) {
   return(file.exists(local_filename))
 }
 
+getEdgarDirListing <- function(file_name) {
+    
+    # Use FTP to get a list of documents associated with a filing.
+    
+    library("RCurl")
+    # Convert URL to that of parent directory of filing documents
+    url <- gsub("(\\d{10})-(\\d{2})-(\\d{6})\\.txt", "\\1\\2\\3", file_name) 
+    
+    # Use FTP to get a list of files
+    ftp_url <- paste0("ftp.sec.gov/", url, "/")
+    file.list <- unlist(strsplit(getURL(ftp_url, ftplistonly=TRUE), "\n"))
+    
+    # Exclude complete submission text file from list of files for download
+    text.file <- gsub("^.*\\/", "", file_name)
+    file.path(url, setdiff(file.list, text.file))
+}
+
+get_all_files <- function(path) {
+    # Get all documents associated with a filing.
+    file_list <- getEdgarDirListing(file_name)
+    result <- lapply(file_list, get_text_file)
+    return(any(unlist(result)))
+}
+
 # Function to download header (SGML) files associated with a filing.
 # Most of the work is in parsing the name of the text filing and transforming 
 # that into the URL of the SGML file.
