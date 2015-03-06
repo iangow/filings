@@ -108,11 +108,11 @@ extract.filings <- function(file_path) {
 ## A function to extract filings from complete submission text files submitted
 ## to the SEC into the component files contained within them.
     require(XML)
-    
+    if (is.na(file_path)) return(NA)
     new_location <- Sys.getenv("EDGAR_DIR")
      
     # Parse the file as an XML file containing multiple documents
-    webpage <- readLines(file_path)
+    webpage <- readLines(file.path(new_location, file_path))
      
     # Extract a list of file names from the complete text submission
     file.name <- gsub("<FILENAME>","", 
