@@ -42,7 +42,7 @@ getEdgarDirListing <- function(file_name) {
     file.path(url, setdiff(file.list, text.file))
 }
 
-get_all_files <- function(path) {
+get_all_files <- function(file_name) {
     # Get all documents associated with a filing.
     file_list <- getEdgarDirListing(file_name)
     result <- lapply(file_list, get_text_file)
