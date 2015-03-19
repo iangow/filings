@@ -122,7 +122,7 @@ extract.filings <- function(file_path) {
     # If there are no file names, then the full text submission is simply a text file.
     # Rather than copying this to the new location, I just symlink it (this saves space).
     if (length(file.name)==0) { 
-        return(file.name)
+        return(TRUE)
     } 
      
     # If got here, we have a full-text submission that isn't simply a text file
@@ -158,8 +158,8 @@ extract.filings <- function(file_path) {
             pdf.end <- grep("^end", temp,  perl=TRUE)  
             t <- tempfile()
             writeLines(temp[pdf.start:pdf.end], con=t)
-            print(paste("uudecode -o", file.name[i], t))
-            system(paste("uudecode -o", file.name[i], t))
+            print(paste("uudecode -i -o", file.name[i], t))
+            system(paste("uudecode -i -o", file.name[i], t))
             unlink(t)
         }
          
@@ -192,7 +192,7 @@ extract.filings <- function(file_path) {
         }
  
     }
-    return(file.name)
+    return(TRUE)
 }
 
 html2txt <- function(file) {
