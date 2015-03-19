@@ -40,7 +40,8 @@
       library(RPostgreSQL)
       pg <- dbConnect(PostgreSQL())
 
-      rs <- dbWriteTable(pg, c("filings", "filings"), data, append=TRUE, row.names=FALSE)
+      rs <- dbWriteTable(pg, c("filings", "filings"), data, 
+                         append=TRUE, row.names=FALSE)
       dbDisconnect(pg)
       return(rs)
     }
@@ -49,8 +50,8 @@
     pg <- dbConnect(PostgreSQL())
     # dbGetQuery(pg, "DROP TABLE IF EXISTS filings.filings")
 
-    for (year in 2014) {
-      for (quarter in 4) {
+    for (year in 2015) {
+      for (quarter in 1) {
         dbGetQuery(pg, paste(
           "DELETE
           FROM filings.filings
