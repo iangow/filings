@@ -104,15 +104,15 @@ get_sgml_file <- function(path) {
   } 
 }
 
-extract.filings <- function(file_path) {
+extract.filings <- function(file_name) {
 ## A function to extract filings from complete submission text files submitted
 ## to the SEC into the component files contained within them.
     require(XML)
-    if (is.na(file_path)) return(NA)
+    if (is.na(file_name)) return(NA)
     new_location <- Sys.getenv("EDGAR_DIR")
      
     # Parse the file as an XML file containing multiple documents
-    webpage <- readLines(file.path(new_location, file_path))
+    webpage <- readLines(file.path(new_location, file_name))
      
     # Extract a list of file names from the complete text submission
     file.name <- gsub("<FILENAME>","", 
@@ -128,7 +128,7 @@ extract.filings <- function(file_path) {
     # If got here, we have a full-text submission that isn't simply a text file
     # We need to make the parent directory for the component files that are 
     # embedded in the submission
-    file.dir <- gsub("-(\\d{2})-(\\d{6})\\.txt$", "\\1\\2", file_path, perl=TRUE)
+    file.dir <- gsub("-(\\d{2})-(\\d{6})\\.txt$", "\\1\\2", file.path(new_location, file_name), perl=TRUE)
     print(file.dir)
     dir.create(file.dir, showWarnings=FALSE, recursive=TRUE)
      
@@ -152,7 +152,7 @@ extract.filings <- function(file_path) {
         file.ext <- gsub(".*\\.(.*?)$", "\\1", file.name[i])
          
         # Extract binary files
-        if (file.ext %in% c("zip", "xls", "jpg", "gif")) {
+        if (file.ext %in% c("zip", "jpg", "gif")) {
             temp <- webpage[start.line[i]:end.line[i]]
             pdf.start <- grep("^begin", temp,  perl=TRUE)
             pdf.end <- grep("^end", temp,  perl=TRUE)  
@@ -170,7 +170,7 @@ extract.filings <- function(file_path) {
         }
          
         # Extract text-based formatted file types
-        if (file.ext %in% c("htm", "js", "css", "paper", "xsd")) {
+        if (file.ext %in% c("htm", "xls", "xlsx", "js", "css", "paper", "xsd")) {
             temp <- webpage[start.line[i]:end.line[i]]
             pdf.start <- grep("^<TEXT>", temp,  perl=TRUE) +1
             pdf.end <- grep("^</TEXT>", temp,  perl=TRUE) -1  
