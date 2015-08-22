@@ -74,9 +74,6 @@ filings <- dbGetQuery(pg, "
       FROM filings.filing_details_13d)
   -- ORDER BY random()")
 dim(filings)
-# filings <- filings[1:1000, ]
-# rs <- dbGetQuery(pg, "
-#   DROP TABLE IF EXISTS filings.filing_details_13d")
 
 removeErrors <- function(a_list) {
   a_list[unlist(lapply(a_list, function(x) { class(x)!="try-error"}))]

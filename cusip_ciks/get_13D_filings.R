@@ -29,7 +29,7 @@ library(parallel)
 system.time({
     file.list$have_file[to.get] <- 
     unlist(mclapply(file.list$file_name[to.get], get_text_file,
-                    mc.preschedule=FALSE, mc.cores=30))
+                    mc.preschedule=FALSE, mc.cores=6))
 })
 
 # Now, pull SGMLs for each filing ----
@@ -41,7 +41,7 @@ library(parallel)
 system.time({
   file.list$sgml_file[to.get] <- 
     unlist(mclapply(file.list$file_name[to.get], get_sgml_file, 
-                  mc.preschedule=FALSE, mc.cores=30))
+                  mc.preschedule=FALSE, mc.cores=6))
 })
 
 
