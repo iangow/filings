@@ -38,7 +38,6 @@ parse13d <- function(text) {
     } else {
       return(data.frame(sub_cik=NA, sub_name=NA, filer_cik=NA, filer_name=NA))
     }
-    
 }
 
 getSGMLlocation <- function(path) {
@@ -63,11 +62,6 @@ extract13Ddata <- function(file_name) {
 library(RPostgreSQL)
 drv <- dbDriver("PostgreSQL")
 pg <- dbConnect(drv, dbname="crsp")
-
- dbGetQuery(pg, "
-  DELETE  
-  FROM filings.filing_details_13d
-  WHERE file_name IS NULL")
 
 filings <- dbGetQuery(pg, "
   SET work_mem='10GB';
@@ -102,7 +96,8 @@ for (i in 0:floor((dim(filings)[1])/batch_rows)) {
     }
     
     # filing_list <- lapply(filings$file_name[range], extract13Ddata)
-    filing_list <- mclapply(filings$file_name[range], extract13Ddata, mc.cores=20)
+    filing_list <- mclapply(filings$file_name[range], extract13Ddata, 
+                            mc.cores=20)
     
     if (!is.null(filing_list) & !is.null(range)) {
       filing_list <- removeErrors(filing_list)
@@ -114,15 +109,5 @@ for (i in 0:floor((dim(filings)[1])/batch_rows)) {
 }
 
 rs <- dbGetQuery(pg, "
-    SET work_mem='10GB';
-
-    DROP TABLE IF EXISTS filings.temp;
-  
-    CREATE TABLE filings.temp AS
-    SELECT DISTINCT *
-    FROM filings.filing_details_13d
-    WHERE file_name IS NOT NULL;
-            
-    DROP TABLE IF EXISTS filings.filing_details_13d;
-            
-    ALTER TABLE filings.temp RENAME TO filing_details_13d")
+    DELETE FROM filings.filing_details_13d 
+    WHERE file_name IS NULL;")
