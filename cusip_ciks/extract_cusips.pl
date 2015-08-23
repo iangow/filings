@@ -3,7 +3,6 @@ use DBI;
 use HTML::Strip;
 use File::stat;
 use Env qw($PGDATABASE $PGUSER $PGHOST $EDGAR_DIR);
-use Env qw($);
 
 $path_to_edgar = $EDGAR_DIR ? $EDGAR_DIR : "/Volumes/2TB/data/";
 
@@ -12,25 +11,21 @@ $PGDATABASE = $PGDATABASE ? $PGDATABASE : "crsp";
 $PGUSER = $PGUSER ? $PGUSER : "igow";
 $PGHOST= $PGHOST ? $PGHOST : "localhost";
 
-$gz_file = @ARGV[0];
+$file_name = @ARGV[0];
 
 my $dbh = DBI->connect("dbi:Pg:dbname=$PGDATABASE;host=$PGHOST", "$PGUSER")	
 	or die "Cannot connect: " . $DBI::errstr;
   
-# Reset the variables
-$cusip=""; $cik=""; $co_name=""; $format="";
-
 # Get the file name
-$file = $ref->{'file_name'};
-$full_path = $gz_file;
+$full_path = $path_to_edgar . '/' . $file_name ;
 
 # Skip if there is no file or if the file is over 1MB
 unless (-e $full_path) {
-    next;
+    exit;
 } 
 my $filesize = stat($full_path)->size;
 if ($filesize > 1000000) {
-    next;
+    exit;
 }
 
 # Open the SEC text filing
@@ -75,7 +70,7 @@ $sgml_file =~ s/(\d{10})-(\d{2})-(\d{6})\.txt/$1$2$3\/$1-$2-$3.hdr.sgml/g;
 
 # Skip if there is no file
 unless (-e $sgml_file) {
-    next;
+    exit;
 } 
 
 # Open the SGML header file and join its text
@@ -100,11 +95,17 @@ if ($lines =~ /<SUBJECT-COMPANY>(.*)<\/SUBJECT-COMPANY>/s) {
 # Close the SGML header file 
 close($fh);
 
+$co_name =~ s/\s+$//g;
+$co_name =~ s/'/''/g;
+if ($cik=='') {
+    $cik=NULL; # exit;
+}
+
 # Output the result
 # Output results num_sentences
-$sql = "INSERT INTO filings.cusip_cik_alt ";
-$sql .= "( file_name,cusip,cik,co_name,format), ";
-$sql .= "VALUES ($file,$cusip,$cik,'$co_name',$format")";
+$sql = "INSERT INTO filings.cusip_cik ";
+$sql .= "(file_name, cusip, cik, company_name, format) ";
+$sql .= "VALUES ('$file_name','$cusip',$cik,'$co_name','$format')";
 $dbh->do($sql);        
 
 # clean up
