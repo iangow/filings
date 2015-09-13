@@ -199,3 +199,31 @@ html2txt <- function(file) {
     library(XML)
     xpathApply(htmlParse(file, encoding="UTF-8"), "//body", xmlValue)[[1]] 
 }
+
+delete_zero_files <- function(file_name) {
+    
+    drop_extracted <- function(file_name) {
+        library(RPostgreSQL)
+        pg <- dbConnect(PostgreSQL())
+        
+        dbGetQuery(pg, paste0("DELETE FROM filings.extracted 
+                              WHERE file_name='", file_name, "'"))
+        dbDisconnect(pg)
+    
+    }
+    
+    if (is.na(file_name)) {
+        drop_extracted(file_name)
+        return(NA)
+    }
+    
+    file_path <- file.path(Sys.getenv("EDGAR_DIR"), file_name)
+    size <- file.info(file_path)$size
+    
+    if (!file.exists(file_path)) return(NA)
+    if (size==0) {
+        temp <- unlink(file_path)
+        drop_extracted(file_name)
+    }
+    return(size)
+}
