@@ -1,3 +1,4 @@
+# Create functions to get filings ----
 getSECIndexFile <- function(year, quarter) {
 
     # Download the zipped index file from the SEC website
@@ -40,12 +41,14 @@ addIndexFileToDatabase <- function(data) {
     library(RPostgreSQL)
     pg <- dbConnect(PostgreSQL())
 
-    rs <- dbWriteTable(pg, c("filings", "filings"), data, 
+    rs <- dbGetQuery(pg, "CREATE SCHEMA IF NOT EXISTS filings")
+    rs <- dbWriteTable(pg, c("filings", "filings"), data,
                                          append=TRUE, row.names=FALSE)
     dbDisconnect(pg)
     return(rs)
 }
 
+# Add data for years 1993 to 2014 ----
 library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 # dbGetQuery(pg, "DROP TABLE IF EXISTS filings.filings")
@@ -62,6 +65,11 @@ for (year in 1993:2014) {
     addIndexFileToDatabase(getSECIndexFile(year, quarter))
     }
 }
+rs <- dbDisconnect(pg)
+
+# Add data for 2015 ----
+library(RPostgreSQL)
+pg <- dbConnect(PostgreSQL())
 
 for (year in 2015) {
     for (quarter in 1:3) {
@@ -75,3 +83,4 @@ for (year in 2015) {
         addIndexFileToDatabase(getSECIndexFile(year, quarter))
     }
 }
+rs <- dbDisconnect(pg)
