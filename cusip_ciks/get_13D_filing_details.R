@@ -11,13 +11,13 @@ find_text <- function(tag, text) {
 
 extract_portion <- function(the_text=NULL, tag) {
  # if (is.null(the_text) | is.null) return(NULL)
-  
+
   beg.tag <- paste("^<", tag, ">", sep="")
   end.tag <- paste("^</", tag, ">", sep="")
-  
+
   beg <-  find_text(beg.tag, the_text)
   end <-  find_text(end.tag, the_text)
-  
+
   if(end>beg) { the_text[beg:end] } else {
     stop()
   }
@@ -29,9 +29,9 @@ parse13d <- function(text) {
     sub.txt <- extract_portion(text, "SUBJECT-COMPANY")
     sub_cik <- extract_value(sub.txt, "CIK")
     sub_name <- extract_value(sub.txt, "CONFORMED-NAME")
-    
+
     filer.txt <- try(extract_portion(text, "FILED-BY"))
-    if (class(filer.txt) != "try-error") {  
+    if (class(filer.txt) != "try-error") {
       filer_cik <- extract_value(filer.txt, "CIK")
       filer_name <- extract_value(filer.txt, "CONFORMED-NAME")
       return(data.frame(sub_cik, sub_name, filer_cik, filer_name))
@@ -44,10 +44,10 @@ getSGMLlocation <- function(path) {
   ## Convert a file_name from filings.filings to a path to
   ## the associated SGML file
   sgml_basename <- basename(gsub(".txt$", ".hdr.sgml", path, perl=TRUE))
-  sgml_path <- file.path(dirname(path), 
-                         gsub("(-|\\.hdr\\.sgml$)", "", 
+  sgml_path <- file.path(dirname(path),
+                         gsub("(-|\\.hdr\\.sgml$)", "",
                               sgml_basename, perl=TRUE))
-  
+
   ftp <- file.path("http://www.sec.gov/Archives", sgml_path, sgml_basename)
   return(ftp)
 }
@@ -60,12 +60,11 @@ extract13Ddata <- function(file_name) {
 }
 
 library(RPostgreSQL)
-drv <- dbDriver("PostgreSQL")
-pg <- dbConnect(drv, dbname="crsp")
+pg <- dbConnect(PostgreSQL())
 
 filings <- dbGetQuery(pg, "
   SET work_mem='10GB';
-  
+
   SELECT *
   FROM filings.filings
   WHERE form_type IN ('SC 13D', 'SC 13D/A')
@@ -85,17 +84,17 @@ for (i in 0:floor((dim(filings)[1])/batch_rows)) {
     filing_list <- NULL
     from <- i*batch_rows+1
     to <- min((i+1)*batch_rows, dim(filings)[1])
-    
+
     if (to >= from) {
       range <- from:to
     } else {
       range <- NULL
     }
-    
+
     # filing_list <- lapply(filings$file_name[range], extract13Ddata)
-    filing_list <- mclapply(filings$file_name[range], extract13Ddata, 
+    filing_list <- mclapply(filings$file_name[range], extract13Ddata,
                             mc.cores=20)
-    
+
     if (!is.null(filing_list) & !is.null(range)) {
       filing_list <- removeErrors(filing_list)
       filing_details <- do.call(rbind, filing_list)
@@ -106,5 +105,5 @@ for (i in 0:floor((dim(filings)[1])/batch_rows)) {
 }
 
 rs <- dbGetQuery(pg, "
-    DELETE FROM filings.filing_details_13d 
+    DELETE FROM filings.filing_details_13d
     WHERE file_name IS NULL;")
