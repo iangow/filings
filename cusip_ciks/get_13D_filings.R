@@ -5,7 +5,7 @@ library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 
 file.list <- dbGetQuery(pg, "
-    SET work_mem='10GB';
+    SET work_mem='1GB';
 
     SELECT * 
     FROM filings.filings
