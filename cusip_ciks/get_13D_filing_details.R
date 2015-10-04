@@ -63,17 +63,17 @@ library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 
 filings <- dbGetQuery(pg, "
-  SET work_mem='10GB';
+
+  SET work_mem='1GB';
 
   SELECT *
   FROM filings.filings
   WHERE form_type IN ('SC 13D', 'SC 13D/A')
     AND file_name NOT IN (
       SELECT file_name
-      FROM filings.filing_details_13d)
-  -- ORDER BY random()")
+      FROM filings.filing_details_13d)")
 dim(filings)
-
+dbDisconnect(pg)
 removeErrors <- function(a_list) {
   a_list[unlist(lapply(a_list, function(x) { class(x)!="try-error"}))]
 }
@@ -91,9 +91,8 @@ for (i in 0:floor((dim(filings)[1])/batch_rows)) {
       range <- NULL
     }
 
-    # filing_list <- lapply(filings$file_name[range], extract13Ddata)
     filing_list <- mclapply(filings$file_name[range], extract13Ddata,
-                            mc.cores=20)
+                            mc.cores=6)
 
     if (!is.null(filing_list) & !is.null(range)) {
       filing_list <- removeErrors(filing_list)
