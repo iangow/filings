@@ -4,7 +4,7 @@ html2txt <- function(file) {
     xpathApply(htmlParse(file, encoding="UTF-8"), "//body", xmlValue)[[1]]
 }
 
-apply_regex <- function(file_path, ignore.case=FALSE) {
+apply_name_regex <- function(file_path, ignore.case=FALSE) {
 
     if (grepl(".html?$", file_path)) {
         # If HTML
@@ -23,7 +23,7 @@ apply_regex <- function(file_path, ignore.case=FALSE) {
 
     post_phrases <- gsub("\\s+", "\\\\s+", post_phrases)
 
-    pre_regex <- "(?i)Commission\\s+(file\\s+)?(?:number|No\\.):?\\s\\s*\\d(?:-|\\d){3,}(?-i)"
+    pre_regex <- "(?i)Commission\\s+(file\\s+)?(?:number|[Nn]o\\.):?\\s\\s*\\d(?:-|\\d){3,}(?-i)"
     post_regex <-
         paste0("(?i)\\((?:", paste(post_phrases, collapse="|"), ")\\)(?-i)")
 
@@ -68,13 +68,13 @@ get_file_list <- function(file_path) {
     return(files)
 }
 
-check_regexes <- function(file_name) {
+check_name_regex <- function(file_name) {
     path <- file.path(Sys.getenv("EDGAR_DIR"), file_name)
 
     files <- get_file_list(path)
     if (length(files)==0) return(NA)
 
-    res <- mapply(apply_regex, files)
+    res <- mapply(apply_name_regex, files)
     res <- res[!is.na(res)]
     if (length(res)>=1) {
         return(as.character(res[1]))
