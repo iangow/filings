@@ -1,9 +1,10 @@
 # Create functions to get filings ----
 getSECIndexFile <- function(year, quarter) {
 
+    library(curl)
     # Download the zipped index file from the SEC website
     tf <- tempfile()
-    result <- try(download.file(
+    result <- try(curl_download(
         url=paste("http://www.sec.gov/Archives/edgar/full-index/",
                             year,"/QTR", quarter, "/company.zip",sep=""),
         destfile=tf))
@@ -67,11 +68,11 @@ for (year in 1993:2014) {
 }
 rs <- dbDisconnect(pg)
 
-# Add data for 2015 ----
+# Add data for 2016 ----
 library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 
-for (year in 2015) {
+for (year in 2016) {
     for (quarter in 1:3) {
         if(dbExistsTable(pg, c("filings", "filings"))) {
             dbGetQuery(pg, paste(
