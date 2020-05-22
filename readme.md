@@ -1,3 +1,5 @@
+**This code is not maintained. Please go to [mccgr/edgar](https://github.com/mccgr/edgar) for current code.
+
 # Code to get data on or from filings on EDGAR
 
 - Get filing index files: `get_filings.R`. The data contain meta-data on every filing on EDGAR: `company_name, CIK, date_filed, form_type, file_name`.
