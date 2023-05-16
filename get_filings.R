@@ -54,26 +54,26 @@ library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 # dbGetQuery(pg, "DROP TABLE IF EXISTS filings.filings")
 
-for (year in 1993:2014) {
-    for (quarter in 1:4) {
-        if(dbExistsTable(pg, c("filings", "filings"))) {
-           dbGetQuery(pg, paste(
-            "DELETE
-             FROM filings.filings
-             WHERE extract(quarter FROM date_filed)=", quarter,
-           " AND extract(year FROM date_filed)=", year))
-        }
-    addIndexFileToDatabase(getSECIndexFile(year, quarter))
-    }
-}
-rs <- dbDisconnect(pg)
+# for (year in 1993:2014) {
+#     for (quarter in 1:4) {
+#         if(dbExistsTable(pg, c("filings", "filings"))) {
+#            dbGetQuery(pg, paste(
+#             "DELETE
+#              FROM filings.filings
+#              WHERE extract(quarter FROM date_filed)=", quarter,
+#            " AND extract(year FROM date_filed)=", year))
+#         }
+#     addIndexFileToDatabase(getSECIndexFile(year, quarter))
+#     }
+# }
+# rs <- dbDisconnect(pg)
 
 # Add data for 2016 ----
 library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 
-for (year in 2016) {
-    for (quarter in 1:3) {
+for (year in 2017) {
+    for (quarter in 1) {
         if(dbExistsTable(pg, c("filings", "filings"))) {
             dbGetQuery(pg, paste(
                 "DELETE

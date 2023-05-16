@@ -22,25 +22,25 @@ if (!dbExistsTable(pg, c("filings", "cusip_cik"))) {
         CREATE INDEX ON filings.cusip_cik (cik);")
 }
 
-# Note that this assumes that streetevents.calls is up to date.
-file_list <- dbGetQuery(pg, "
-    SET work_mem='2GB';
+dbDisconnect(pg)
 
-    SELECT file_name
-    FROM filings.filings 
-    WHERE form_type IN ('SC 13G', 'SC 13G/A', 'SC 13D', 'SC 13D/A')
-    EXCEPT 
-    SELECT file_name 
-    FROM filings.cusip_cik
-    ORDER BY file_name")
+library(dplyr)
+pg <- src_postgres()
+filings <- tbl(pg, sql("SELECT * FROM filings.filings"))
+cusip_cik <- tbl(pg, sql("SELECT * FROM filings.cusip_cik"))
 
-rs <- dbDisconnect(pg)
+file_list <-
+    filings %>%
+    filter(form_type %in% c('SC 13G', 'SC 13G/A', 'SC 13D', 'SC 13D/A')) %>%
+    select(file_name) %>%
+    anti_join(cusip_cik) %>%
+    collect()
 
 # Create function to parse a SC 13D or SC 13F filing ----
 parseFile <- function(file_name) {
-    
+
     # Parse the indicated file using a Perl script
-    system(paste("filings/cusip_ciks/extract_cusips.pl", file_name),
+    system(paste("cusip_ciks/extract_cusips.pl", file_name),
            intern = TRUE)
 }
 

@@ -8,11 +8,11 @@ file.list <- dbGetQuery(pg, "
     SET work_mem='1GB';
 
     SELECT *
-    FROM edgar.filings
-    WHERE form_type IN ('SC 13G', 'SC 13G/A', 'SC 13D', 'SC 13D/A')
+    FROM filings.filings
+    WHERE form_type ~ 'DEF 14A'
     AND file_name NOT IN (
         SELECT file_name
-        FROM filings.cusip_cik)
+        FROM filings.extracted)
 ")
 
 dbDisconnect(pg)

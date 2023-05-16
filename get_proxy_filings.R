@@ -12,7 +12,6 @@ extracted <- tbl(pg, sql("SELECT * FROM filings.extracted"))
 file.list <-
     filings %>%
     filter(form_type == 'DEF 14A') %>%
-    filter(date_filed=='2015-09-16') %>%
     anti_join(extracted) %>%
     compute()
 
@@ -74,19 +73,12 @@ get_sgml_file <- function(path) {
 }
 
 # Now, pull SGMLs for each filing
-file.list$sgml_file <- NA
-to.get <- 1:length(file.list$sgml_file) #
 
-file.list %>%
+file.list <-
+    file.list %>%
+    collect()  %>%
+    rowwise() %>%
     mutate(sgml_file = get_sgml_file(file_name))
-
-library(parallel)
-# Get the file
-system.time({
-  file.list$sgml_file[to.get] <-
-    unlist(mclapply(file.list$file_name[to.get], get_sgml_file,
-                    mc.preschedule=FALSE, mc.cores=6))
-})
 
 parseSGMLfile <- function(sgml_file, field="<PERIOD>") {
 
@@ -103,6 +95,12 @@ parseSGMLfile <- function(sgml_file, field="<PERIOD>") {
   close(con)
   return(value[[1]])
 }
+
+file.list.3 <-
+    file.list.2 %>%
+    collect()  %>%
+    rowwise() %>%
+    mutate(period = parseSGMLfile(file_name, field="<PERIOD>"))
 
 file.list$period <- NA
 file.list$period <-
